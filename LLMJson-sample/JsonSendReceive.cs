@@ -31,9 +31,10 @@ namespace LLMJson_sample
 
         public JsonSendReceive()
         {
+            string OpenAIkey = File.Exists("apikey.txt") ? File.ReadAllText("apikey.txt") : ""; // OpenAI key
             _openAiService = new OpenAIService(new OpenAiOptions()
             {
-                ApiKey = "API-key"
+                ApiKey = OpenAIkey
             });
         }
 
