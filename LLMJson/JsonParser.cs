@@ -135,6 +135,30 @@ namespace LLMJson
             return splitArray;
         }
 
+        private static object? ParseValueJsonProp(object item, Type type, string json)
+        { 
+
+            // If immutable, do not update the value
+            type.GetProperty("UpdateState")?.SetValue(item, UpdateStates.Unchanged);
+            bool Immutable = (bool)        (type.GetProperty("Immutable")  ?.GetValue(item) ?? false);if (Immutable) {return item; }
+
+            // Now update the wrapped value
+            Type internalType  = type.GetGenericArguments()[0];
+            var InternalValue  = ParseValue(internalType, json);
+
+            if (InternalValue == null)  { 
+                type.GetProperty("UpdateState")?.SetValue(item, UpdateStates.InvalidUpdate); } else 
+            { 
+                type.GetProperty("UpdateState")?.SetValue(item, UpdateStates.Updated);
+                // Update value of the instance
+
+                type.GetProperty("Value")?.SetValue(item, InternalValue);
+            }
+
+
+            return item;
+        }
+
         internal static object? ParseValue(Type type, string json)
         {
             if (type == typeof(string))
@@ -398,10 +422,35 @@ namespace LLMJson
                 if (nameToField.TryGetValue(key, out fieldInfo))
                     fieldInfo.SetValue(instance, ParseValue(fieldInfo.FieldType, value));
                 else if (nameToProperty.TryGetValue(key, out propertyInfo))
-                    propertyInfo.SetValue(instance, ParseValue(propertyInfo.PropertyType, value), null);
+                {
+                    // check if this is a special JsonProp<T> type
+                    var propType = propertyInfo.PropertyType;
+                    if (propType.IsGenericType && propType.GetGenericTypeDefinition() == typeof(JsonProp<>))
+                    {
+                        // Find the instance of the inner type of the JsonProp
+                        var instanceType = instance.GetType();  
+                        var propertyInfoJsonProp = instanceType.GetProperty(propertyInfo.Name);
+                        if (propertyInfoJsonProp!=null)
+                        {
+                            object? instanceJsonProp = propertyInfoJsonProp.GetValue(instance);
+                            if (instanceJsonProp != null)
+                            {
+                                propertyInfo.SetValue(instance, ParseValueJsonProp(instanceJsonProp, propType, json), null);
+                            }
+                        }
+                    } else
+                    {
+                        propertyInfo.SetValue(instance, ParseValue(propType, value), null);
+                    }
+
+
+                    
+                }
             }
 
             return instance;
         }
+
+
     }
 }

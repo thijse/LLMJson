@@ -1,16 +1,17 @@
 ﻿
 namespace LLMJson
 {
+    public enum UpdateStates
+    {
+        Unchanged,
+        InvalidUpdate,
+        Updated
+    };
+
     public class JsonProp<T> 
     {
         private T _value;
 
-        public enum UpdateStates
-        {
-            Unchanged,
-            InvalidUpdate,
-            Updated
-        };
 
         public string Description       { get; set; } = "";
         public UpdateStates UpdateState { get; set; } = UpdateStates.Unchanged;
@@ -18,14 +19,19 @@ namespace LLMJson
         public bool Immutable           { get; set; } = false;
 
         public T Value {
-            get { return _value;  }
-            set { _value = value; }
+            get {                return _value;  }
+            set { if(!Immutable) _value = value; }
         }
 
-        public JsonProp(T value)
+        public JsonProp(T value, string description= "", bool visible = true, bool immutable =false)
         {
-            _value = value;
+            _value      = value;
+            Description = description;
+            Visible     = visible;  
+            Immutable   = immutable;    
         }
+
+
 
         public override string ToString() { try { return Value?.ToString() ?? ""; }catch {return "";} }
 

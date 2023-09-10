@@ -3,6 +3,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Collections;
 using System.IO;
+//using static LLMJson.JsonProp<T>;
 
 namespace LLMJson;
 
@@ -46,9 +47,8 @@ public static class JsonWriter
 
     static void AppendValue(StringBuilder stringBuilder, object? item, string description = "", bool addTypeDescription=true)
     {
-        StringBuilder valueStringBuilder = new StringBuilder();
-        
-        var valueTypeString = "";
+        StringBuilder valueStringBuilder = new StringBuilder();        
+        //var valueTypeString = "";
 
         if (item == null)
         {
@@ -57,45 +57,18 @@ public static class JsonWriter
             CreateEntry(stringBuilder,valueStringBuilder, addTypeDescription?GetValueTypeString(item):"", description);
             return;
         }
-
         Type type = item.GetType();
-
 
         if(type.IsGenericType && type.GetGenericTypeDefinition() == typeof(JsonProp<>))
         {
-            // We can directly use description as it is part of the base class
-            
-
             // Use reflection to find the type argument of the derived class
-
-            //if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(JsonProp<>))
-            //{
-            //    Type typeArgument = type.GetGenericArguments()[0];
-            //    Console.WriteLine("Type of T in the derived class: " + typeArgument);
-            //    Type genericType = typeof(JsonProp<>).MakeGenericType(typeArgument);
-            //    object castedObject = Convert.ChangeType(type, JsonProp<typeof(typeArgument)>);
-            //}
-
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(JsonProp<>))
-            {
-                // casting it to an property of type object, to access non-typed properties
-                JsonProp<object> jsonProp= (JsonProp<object>)item;
-
-                description = jsonProp.Description;
-
-                // alternative using reflection:
-                //var descriptionProperty = instanceType.GetProperty("Description");
-                //string description = descriptionProperty.GetValue(instance)?.ToString();
-
-                // Accessing Value field as object. 
-                var valueProperty = type.GetProperty("Value");
-                object? value = valueProperty?.GetValue(item);
-
-                Console.WriteLine($"Description: {description}");
-                Console.WriteLine($"Value: {value}");
-                AppendValue(valueStringBuilder, value, description);
-            }
-
+            bool Visible             = (bool)        (type.GetProperty("Visible")    ?.GetValue(item) ?? default(bool)); if (!Visible) return;
+            //bool Immutable           = (bool)        (type.GetProperty("Immutable")  ?.GetValue(item) ?? default(bool)); 
+            string newDescription    =                type.GetProperty("Description")?.GetValue(item) ?.ToString()??"";
+            object? value            =                type.GetProperty("Value")      ?.GetValue(item);
+            //UpdateStates UpdateState = (UpdateStates)(type.GetProperty("UpdateState")?.GetValue(item) ?? default(UpdateStates));
+                        
+            AppendValue(stringBuilder, value, string.IsNullOrEmpty(newDescription)?description:newDescription, true);
         }
         else 
         if (type == typeof(string) || type == typeof(char))
