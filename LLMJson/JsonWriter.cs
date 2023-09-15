@@ -1,8 +1,7 @@
-﻿using System.Reflection;
+﻿using System.Collections;
+using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
-using System.Collections;
-using System.IO;
 //using static LLMJson.JsonProp<T>;
 
 namespace LLMJson;
@@ -45,7 +44,7 @@ public static class JsonWriter
         return stringBuilder.ToString();
     }
 
-    static void AppendValue(StringBuilder stringBuilder, object? item, string description = "", bool addTypeDescription=true)
+    static bool AppendValue(StringBuilder stringBuilder, object? item, string description = "", bool addTypeDescription=true)
     {
         StringBuilder valueStringBuilder = new StringBuilder();        
         //var valueTypeString = "";
@@ -54,15 +53,15 @@ public static class JsonWriter
         {
             valueStringBuilder.Append("null");
             //valueTypeString = "is non-existent. Ignore";
-            CreateEntry(stringBuilder,valueStringBuilder, addTypeDescription?GetValueTypeString(item):"", description);
-            return;
+            //CreateEntry(stringBuilder,valueStringBuilder, addTypeDescription?GetValueTypeString(item):"", description);
+            return false;
         }
         Type type = item.GetType();
 
         if(type.IsGenericType && type.GetGenericTypeDefinition() == typeof(JsonProp<>))
         {
             // Use reflection to find the type argument of the derived class
-            bool Visible             = (bool)        (type.GetProperty("Visible")    ?.GetValue(item) ?? default(bool)); if (!Visible) return;
+            bool Visible             = (bool)        (type.GetProperty("Visible")    ?.GetValue(item) ?? default(bool)); if (!Visible) return false;
             //bool Immutable           = (bool)        (type.GetProperty("Immutable")  ?.GetValue(item) ?? default(bool)); 
             string newDescription    =                type.GetProperty("Description")?.GetValue(item) ?.ToString()??"";
             object? value            =                type.GetProperty("Value")      ?.GetValue(item);
@@ -217,7 +216,7 @@ public static class JsonWriter
             if (keyType != typeof(string))
             {
                 stringBuilder.Append("{}");
-                return;
+                return true;
             }
 
             stringBuilder.Append('{');
@@ -258,6 +257,7 @@ public static class JsonWriter
                 object? value = fieldInfos[i].GetValue(item);
                 if (value != null)
                 {
+                    var fieldStringBuilder = new StringBuilder();
                     // Get description attribute
                     object[] attributes = fieldInfos[i].GetCustomAttributes(typeof(DescriptionAttribute), true);
                     var fieldDescription = "";
@@ -269,11 +269,12 @@ public static class JsonWriter
                     if (isFirst)
                         isFirst = false;
                     else
-                        stringBuilder.Append(',');
-                    stringBuilder.Append('\"');
-                    stringBuilder.Append(GetMemberName(fieldInfos[i]));
-                    stringBuilder.Append("\":");
-                    AppendValue(stringBuilder, value, fieldDescription);
+                        fieldStringBuilder.Append(',');
+                    fieldStringBuilder.Append('\"');
+                    fieldStringBuilder.Append(GetMemberName(fieldInfos[i]));
+                    fieldStringBuilder.Append("\":");
+                    var succes = AppendValue(fieldStringBuilder, value, fieldDescription);
+                    if (succes) stringBuilder.Append(fieldStringBuilder.ToString());
                 }
             }
             PropertyInfo[] propertyInfo = type.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.FlattenHierarchy);
@@ -285,6 +286,7 @@ public static class JsonWriter
                 object? value = propertyInfo[i].GetValue(item, null);
                 if (value != null)
                 {
+                    var propertyStringBuilder = new StringBuilder();
                     // Get description attribute
                     object[] attributes = propertyInfo[i].GetCustomAttributes(typeof(DescriptionAttribute), true);
                     var fieldDescription = "";
@@ -297,17 +299,20 @@ public static class JsonWriter
                         isFirst = false;
                     else
                     {
-                        stringBuilder.Append(',');
+                        propertyStringBuilder.Append(',');
                     }
-                    stringBuilder.Append('\"');
-                    stringBuilder.Append(GetMemberName(propertyInfo[i]));
-                    stringBuilder.Append("\":");
-                    AppendValue(stringBuilder, value, fieldDescription);
+                    propertyStringBuilder.Append('\"');
+                    propertyStringBuilder.Append(GetMemberName(propertyInfo[i]));
+                    propertyStringBuilder.Append("\":");
+                    var succes = AppendValue(propertyStringBuilder, value, fieldDescription);
+                    if (succes) stringBuilder.Append(propertyStringBuilder.ToString());
                 }
             }
 
             stringBuilder.Append('}');
         }
+
+        return true;
     }
 
     static string GetValueTypeString(object? item)
@@ -341,12 +346,12 @@ public static class JsonWriter
         {
             default:
             case OutputModes.Value:
-                stringBuilder.Append(']');
+                stringBuilder.Append('}');
                 break;
             case OutputModes.Custom:
             case OutputModes.Description:
             case OutputModes.ValueAndDescription:
-                stringBuilder.Append($"]{" \\\\ ".IfBothNotEmpty(description.IfBothNotEmpty(". ") + $"Is of type Dictionary . The key is of type string, the value of {valueTypeString}\n")}");
+                stringBuilder.Append($"}}{" \\\\ ".IfBothNotEmpty(description.IfBothNotEmpty(". ") + $"Is of type Dictionary . The key is of type string, the value of {valueTypeString}\n")}");
                 break;
         }
     }
@@ -357,12 +362,13 @@ public static class JsonWriter
         {
             default:
             case OutputModes.Value:
-                stringBuilder.Append('}');
+                stringBuilder.Append(']');
                 break;
             case OutputModes.Custom:
             case OutputModes.Description:
             case OutputModes.ValueAndDescription:
-                stringBuilder.Append($"}}{" \\\\ ".IfBothNotEmpty(description.IfBothNotEmpty(". ") + $"Is of type List, items are of type {valueTypeString}")}\n");
+                //stringBuilder.Append($"}}{" \\\\ ".IfBothNotEmpty(description.IfBothNotEmpty(". ") + $"Is of type List, items are of type {valueTypeString}")}\n");
+                stringBuilder.Append($"]{" \\\\ ".IfBothNotEmpty(description.IfBothNotEmpty(". ") + $"Is of type List, items are of type {valueTypeString}")}\n");
                 break;
         }
     }

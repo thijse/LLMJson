@@ -66,7 +66,7 @@ namespace LLMJson_sample
 
 
 
-        public void CustomPropertySerializer()
+        public void CustomPropertyDisabledSerializer()
         {
             var Jan       = new Person();
             Jan.Iq.Visible = false; 

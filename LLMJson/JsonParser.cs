@@ -1,7 +1,10 @@
-﻿using System.Collections;
+﻿using Microsoft.Recognizers.Text.Number;
+using Microsoft.Recognizers.Text;
+using System.Collections;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
+using Microsoft.Recognizers.Text.DateTime;
 
 namespace LLMJson
 {
@@ -24,6 +27,8 @@ namespace LLMJson
     // - Parsing of abstract classes or interfaces is NOT supported and will throw an exception.
     public static class JsonParser
     {
+        public static bool UseRecognizer { get; set; } = true;
+
         [ThreadStatic] static Stack<List<string>> splitArrayPool;
         [ThreadStatic] static StringBuilder stringBuilder;
         [ThreadStatic] static Dictionary<Type, Dictionary<string, FieldInfo>> fieldInfoCache;
@@ -31,15 +36,18 @@ namespace LLMJson
         private static object? _baseObject;
         private static bool _isbase;
 
-        public static T FromJson<T>(this string json, T? baseObject)
+        //public static T FromJson<T>(this string json, T? baseObject) where T : new()
+        //{
+        //    _baseObject = baseObject;
+        //    _isbase = true;
+        //    return json.FromJson<T>();
+        //}
+
+        public static T FromJson<T>(this string json, T baseObject) //where T : new()
         {
             _baseObject = baseObject;
             _isbase = true;
-            return json.FromJson<T>();
-        }
-
-        public static T FromJson<T>(this string json)
-        {
+            //if (_baseObject==null) { _baseObject = new T();}
             JsonRepair.Context = JsonRepair.InputType.LLM;
             try { json = JsonRepair.RepairJson(json); } catch (Exception) { /* cleaning failed */ }
 
@@ -142,22 +150,39 @@ namespace LLMJson
             type.GetProperty("UpdateState")?.SetValue(item, UpdateStates.Unchanged);
             bool Immutable = (bool)        (type.GetProperty("Immutable")  ?.GetValue(item) ?? false);if (Immutable) {return item; }
 
-            // Now update the wrapped value
-            Type internalType  = type.GetGenericArguments()[0];
-            var InternalValue  = ParseValue(internalType, json);
+            // Now update the inner value
 
-            if (InternalValue == null)  { 
-                type.GetProperty("UpdateState")?.SetValue(item, UpdateStates.InvalidUpdate); } else 
-            { 
-                type.GetProperty("UpdateState")?.SetValue(item, UpdateStates.Updated);
-                // Update value of the instance
+            // Check if the JsonProp has its own setter (converter from string to the internal type
+            bool updateSucces = false;
+            bool _hasSetter = (bool)(type.GetProperty("HasSetter")?.GetValue(item) ?? false);
+            if (_hasSetter)
+            {
+                // Has custom setter. Now call JsonProp<>.FromString to use it
+                MethodInfo? methodInfo = type.GetMethod("FromString");
 
-                type.GetProperty("Value")?.SetValue(item, InternalValue);
+                if (methodInfo != null) {
+                    var returnValue = methodInfo.Invoke(item, new object[] { json });
+                    if (returnValue != null) { updateSucces = (bool)returnValue; }
+                }
+            }
+            else
+            {
+                Type internalType = type.GetGenericArguments()[0];
+                var internalValue = ParseValue(internalType, json);
+                if (internalValue != null)
+                {
+                    type.GetProperty("Value")?.SetValue(item, internalValue);
+                    updateSucces = true;
+                }
             }
 
+            type.GetProperty("UpdateState")?.SetValue(item, updateSucces? UpdateStates.Updated: UpdateStates.InvalidUpdate); 
+            
 
             return item;
         }
+
+
 
         internal static object? ParseValue(Type type, string json)
         {
@@ -194,26 +219,24 @@ namespace LLMJson
             }
             if (SafeParseUtils.IsPrimitiveInteger(type))
             {
-                return SafeParseUtils.GetClampedInteger(type, json);
+                return SafeParseUtils.GetSafeInteger(type, json, UseRecognizer);
             }
-            else if (SafeParseUtils.IsPrimitiveFloat(type))
+            if (SafeParseUtils.IsPrimitiveFloat(type))
             {
-                return SafeParseUtils.GetClampedFloatingPoint(type, json);
-            }
-            else if (type.IsPrimitive)
-            {
-                return SafeParseUtils.GetClampedFloatingPoint(type, json);
-                var result = Convert.ChangeType(json, type, System.Globalization.CultureInfo.InvariantCulture);
-                return result;
+                return SafeParseUtils.GetSafeFloatingPoint(type, json,UseRecognizer);
             }
             if (type == typeof(decimal))
             {
-                return SafeParseUtils.GetClampedFloatingPoint(type, json);
+                return SafeParseUtils.GetSafeFloatingPoint(type, json, UseRecognizer);
             }
             if (type == typeof(DateTime))
             {
-                DateTime result;
-                DateTime.TryParse(json.Replace("\"", ""), System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out result);
+                return SafeParseUtils.GetSafeDateTime(type, json, UseRecognizer);
+            }
+            else if (type.IsPrimitive)
+            {
+                //return SafeParseUtils.GetSafeFloatingPoint(type, json, UseRecognizer);
+                var result = Convert.ChangeType(json, type, System.Globalization.CultureInfo.InvariantCulture);
                 return result;
             }
             if (json.ToLower() == "null")
@@ -339,7 +362,7 @@ namespace LLMJson
             {
                 if (json.Contains("."))
                 {
-                    return SafeParseUtils.GetClampedFloatingPoint(typeof(double), json);
+                    return SafeParseUtils.GetSafeFloatingPoint(typeof(double), json);
                 }
                 else
                 {
@@ -424,8 +447,22 @@ namespace LLMJson
                 else if (nameToProperty.TryGetValue(key, out propertyInfo))
                 {
                     // check if this is a special JsonProp<T> type
-                    var propType = propertyInfo.PropertyType;
-                    if (propType.IsGenericType && propType.GetGenericTypeDefinition() == typeof(JsonProp<>))
+                    var isJsonProp  = false;
+                    Type propType = propertyInfo.PropertyType;
+                    isJsonProp   = propType.IsGenericType && propType.GetGenericTypeDefinition() == typeof(JsonProp<>);
+                    if (!isJsonProp)
+                    {
+                        // If not, it may be a derived class from property type. Let's check
+                        var  baseType = propertyInfo.PropertyType.BaseType;
+                        if (baseType != null)
+                        {
+                            // If so use this a type for setting values
+                            isJsonProp = baseType.IsGenericType && baseType.GetGenericTypeDefinition() == typeof(JsonProp<>);
+                            if (isJsonProp) { propType = baseType; }
+                        }
+                    }
+
+                    if (isJsonProp)
                     {
                         // Find the instance of the inner type of the JsonProp
                         var instanceType = instance.GetType();  
@@ -435,16 +472,13 @@ namespace LLMJson
                             object? instanceJsonProp = propertyInfoJsonProp.GetValue(instance);
                             if (instanceJsonProp != null)
                             {
-                                propertyInfo.SetValue(instance, ParseValueJsonProp(instanceJsonProp, propType, json), null);
+                                propertyInfo.SetValue(instance, ParseValueJsonProp(instanceJsonProp, propType, value), null);
                             }
                         }
                     } else
                     {
                         propertyInfo.SetValue(instance, ParseValue(propType, value), null);
                     }
-
-
-                    
                 }
             }
 

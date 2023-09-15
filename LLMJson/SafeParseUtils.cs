@@ -1,5 +1,8 @@
 ﻿using System.Globalization;
 using System.Text.RegularExpressions;
+using Microsoft.Recognizers.Text;
+using Microsoft.Recognizers.Text.DateTime;
+using Microsoft.Recognizers.Text.Number;
 
 namespace LLMJson
 {
@@ -16,7 +19,6 @@ namespace LLMJson
                 type == typeof(short) || type == typeof(ushort) ||
                 type == typeof(int)   || type == typeof(uint)   ||
                 type == typeof(long)  || type == typeof(ulong)
-
             );
         }
 
@@ -26,7 +28,6 @@ namespace LLMJson
                 type == typeof(double) || type == typeof(Single)
             );
         }
-
 
         public static Int64? GetInt64(string str)
         {
@@ -48,22 +49,44 @@ namespace LLMJson
             return (Int64)floatingPointNum;                                                                                     // and convert
         }
 
-        public static object? GetClampedInteger(Type type, string json)
+        public static object? GetSafeInteger(Type type, string json, bool useRecognizer=true)
         {
-            var longValue = GetInt64(json);
-            if (longValue == null) return null;
-            var clampedValue = ClampToIntegerTypeRange((long)longValue, type); // Clamp
-            try { return Convert.ChangeType(clampedValue, type, System.Globalization.CultureInfo.InvariantCulture); } catch { return null; }
+            json = PrepString(json); if (string.IsNullOrEmpty(json)) return null;
+            object? result = null;
+            var longValue  = GetInt64(json);
+            if (longValue != null)
+            {
+                var clampedValue = ClampToIntegerTypeRange((long)longValue, type); // Clamp
+                try { return Convert.ChangeType(clampedValue, type, System.Globalization.CultureInfo.InvariantCulture); } catch { /* */ }
+            }
+            return result?? (useRecognizer?RecognizeOrdinal(json): null);
         }
 
-        public static object? GetClampedFloatingPoint(Type type, string json)
+        public static object? GetSafeFloatingPoint(Type type, string json, bool useRecognizer = true)
         {
-            var doubleValue = GetDouble(json); if (doubleValue == null) return null;   // first cast to a double version, to make sure it fits
-            var clampedValue = ClampToFloatTypeRange((double)doubleValue, type);                                                          // Clamp
-            try { return Convert.ChangeType(clampedValue, type, System.Globalization.CultureInfo.InvariantCulture); } catch { return null; }      // Cast to final size
+            json = PrepString(json); if (string.IsNullOrEmpty(json)) return null;
+            object? result = null;
+            var doubleValue = GetDouble(json); if (doubleValue != null) {
+                // first cast to a double version, to make sure it fits
+                var clampedValue = ClampToFloatTypeRange((double)doubleValue, type);                                                              // Clamp
+                try { return Convert.ChangeType(clampedValue, type, System.Globalization.CultureInfo.InvariantCulture); } catch { /* */ }  // Cast to final size
+            }
+            return result ?? (useRecognizer ? RecognizeFloatingPoint(json) : null);
         }
 
-        public static Double ClampToFloatTypeRange(Double value, Type type)
+        public static object? GetSafeDateTime(Type type, string json, bool useRecognizer = true)
+        {
+            json = PrepString(json); if (string.IsNullOrEmpty(json)) return null;
+            bool success = DateTime.TryParse(PrepString(json), System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out var result);
+            return success ? result : (useRecognizer ? RecognizeDateTime(json) : null);
+        }
+
+        public static string PrepString(string json)
+        {
+            return json.Trim().Replace("\"", "").Trim();
+        }
+
+        private static Double ClampToFloatTypeRange(Double value, Type type)
         {
             switch (Type.GetTypeCode(type))
             {
@@ -89,11 +112,32 @@ namespace LLMJson
             }
         }
 
+        internal static int? RecognizeOrdinal(string text)
+        {
+            return int.TryParse(RecognizerResultToValue(NumberRecognizer.RecognizeOrdinal(text, Culture.English)), out var result) ? result : null;
+        }
+
+        internal static float? RecognizeFloatingPoint(string text)
+        {
+            return float.TryParse(RecognizerResultToValue(NumberRecognizer.RecognizeNumber(text, Culture.English)), out var result) ? result : null;
+        }
+
+        internal static DateTime? RecognizeDateTime(string text)
+        {
+            return DateTime.TryParse(RecognizerResultToValue(DateTimeRecognizer.RecognizeDateTime(text, Culture.English)), out var result) ? result : null;
+        }
+
+        internal static string? RecognizerResultToValue(List<ModelResult>? results)
+        {
+            if (results == null || results.Count==0) { return null;}
+            var result = results[0].Resolution["value"]?.ToString()??null;
+            return result;
+        }
+
         public static double? GetDouble(string str)
         {
             if (string.IsNullOrEmpty(str)) { return null; }
             
-                
             var potentialNumbers = RegexFloatNumberLike.Matches(str);
             if (potentialNumbers.Count == 0) { return null; }
 

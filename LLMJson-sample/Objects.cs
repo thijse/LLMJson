@@ -6,27 +6,47 @@ namespace LLMJson_sample
 
     public class Person
     {
-        [DescriptionAttribute("Firstname and last name")]
-        public string               Name                                  { get; set; } = "Jan B Fuhrmann";
+        [DescriptionAttribute("Firstname only")]
+        public string                  Name     { get; set; }
 
         [DescriptionAttribute("Age of person. Range between 0 and 100")]
-        public int                  Age   = 47;
-        public Sex                  Sex                                   { get; set; } = Sex.Male;
-        public JsonProp<int>        Iq                                    { get; set; } = new(130,"Intelligence coefficient");
-        public DateTime             Birthday                              { get; set; } = DateTime.Today;
+        public int                     Age      { get; set; }
+
+        public Sex                     Sex      { get; set; }
+
+        public JsonProp<int>           Iq       { get; set; }
+
+        public DateTime                Birthday { get; set; }
 
         [DescriptionAttribute("A list of character traits, e.g. [\"optimistic\", \"smart\"]")]
-        public List<string>         Traits                                { get; set; } = new List<string>() { "optimistic", "smart" };
+        public List<string>            Traits   { get; set; }
 
-        [DescriptionAttribute("A dictionary of character statistics, e.g. {{\"bravery\", 125}, { \"nimbleness\", 70}}")]
-        public Dictionary<string,int> Stats                               { get; set; } = new Dictionary<string, int> { {"bravery", 125}, { "nimbleness", 70} };
+        [DescriptionAttribute("A dictionary of character statistics, e.g. {{\"bravery\", 100}, { \"nimbleness\", 100}}")]
+        public Dictionary<string, int> Stats    { get; set; }
+
+        public Person()
+        {
+            Name     = "";
+            Age      = 0;
+            Sex      = Sex.Male;
+            Iq       = new JsonProp<int>(0, "");
+            Birthday = DateTime.MinValue;
+            Traits   = new List<string>() { };
+            Stats    = new Dictionary<string, int> { };
+        }
+
+        public void SetNigel()
+        {
+            Name     = "Nigel Thornberry";
+            Age      = 47;
+            Sex      = Sex.Male;
+            Iq       = new JsonProp<int>(130, "Intelligence coefficient");
+            Birthday = DateTime.Today;
+            Traits   = new List<string>() { "sneaky", "funny" };
+            Stats    = new Dictionary<string, int> { { "bravery", 80 }, { "nimbleness", 70 } };
+        }
     }
 
-    public class PropertyTest
-    {
-        public int           IntNumber   { get; set; } = 20;
-        public JsonProp<int> IntProperty { get; set; } = new(130, "Intelligence coefficient");
 
-    }
 
 }
