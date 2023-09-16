@@ -101,7 +101,8 @@ Finally, we have added a new statistic to the existing "Stats" dictionary, which
 		"bravery": 80,
 		"nimbleness": 70
 	}
-}```
+}
+```
 
 When outputted as descriptions it will give back the following
 
