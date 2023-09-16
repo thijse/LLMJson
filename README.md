@@ -25,7 +25,7 @@ And even if a field cannot be parsed, the parser will ignore it and continue!
 # Example
 Serializes a persona including descriptions of the fields and sends it to OpenAI to update the persona. Next, it receives the result and extracts and deserializes the Json. finally the received object is shown as JSON to confirm its correctness.
 
-```json
+```json5
  ** Prompt:
 Ideate and update at least two elements of this persona, make sure all aspects of the persona are consistent.
 
@@ -89,7 +89,7 @@ Finally, we have added a new statistic to the existing "Stats" dictionary, which
     }
 ```
 
-```json
+```json5
 {
 	"Name": "Nigel Thornberry",
 	"Age": 47,
@@ -105,7 +105,7 @@ Finally, we have added a new statistic to the existing "Stats" dictionary, which
 
 When outputted as descriptions it will give back the following
 
-```json
+```json5
 {
 	"Name": "Firstname only. Is of type string",
 	"Age": "Age of person. Range between 0 and 100. Is of type 32-bit integer",
@@ -121,7 +121,7 @@ Note that this is not a valid schema or even valid JSON, but a pseudo-JSON that 
 
 Now, if you want to share with an LLM both values and descriptions, you will get
 
-```json
+```json5
 {
 	"Name": "Nigel Thornberry      "  \\ Firstname only.Is of type string,
 	"Age": 47                         \\ Age of person.Range between 0 and 100. Is of type 32 - bit integer,
