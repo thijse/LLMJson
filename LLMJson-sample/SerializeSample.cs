@@ -1,12 +1,7 @@
-﻿using OpenAI;
-using OpenAI.Managers;
-using OpenAI.ObjectModels;
-using OpenAI.ObjectModels.RequestModels;
-using LLMJson;
+﻿using LLMJson;
 
 namespace LLMJson_sample
 {
-
 
     public class SerializeSample
     {
@@ -14,69 +9,60 @@ namespace LLMJson_sample
         public SerializeSample() { }
 
 
-        public string GetPrompt(string prompt)
-        {
-            var person     = new Person();
-            var personJson = person.ToJson(OutputModes.ValueAndDescription);
-            return prompt + JsonWriter.GetPrompt() + personJson;
-        }
-
-
-
         public void ValueSerializer()
         {
-            var Jan     = new Person();
-            var janJson = JsonWriter.ToJson(
-                Jan,
+            var person     = new Person(); person.SetNigel();
+            var personJson = JsonWriter.ToJson(
+                person,
                 OutputModes.Value
            );
-            Console.WriteLine($"** Serialized object with values\n\n{janJson}\n\n");
+            Console.WriteLine($"** Serialized object with values\n\n{personJson}\n\n");
         }
 
         public void ValueAndDescriptionSerializer()
         {
-            var Jan = new Person();
-            var janJson = JsonWriter.ToJson(
-                Jan,
+            var person = new Person(); person.SetNigel();
+            var personJson = JsonWriter.ToJson(
+                person,
                 OutputModes.ValueAndDescription
            );
-            Console.WriteLine($"** Serialized object with values and descriptions\n\n{janJson}\n\n");
+            Console.WriteLine($"** Serialized object with values and descriptions\n\n{personJson}\n\n");
         }
 
         public void DescriptionSerializer()
         {
-            var Jan = new Person();
-            var janJson = JsonWriter.ToJson(
-                Jan,
+            var person = new Person(); person.SetNigel();
+            var personJson = JsonWriter.ToJson(
+                person,
                 OutputModes.Description
            );
-            Console.WriteLine($"** Serialized object with descriptions\n\n{janJson}\n\n");
+            Console.WriteLine($"** Serialized object with descriptions\n\n{personJson}\n\n");
         }
 
         public void CustomSerializer()
         {
-            var Jan = new Person();
-            var janJson = JsonWriter.ToJson(
-                Jan,
+            var person = new Person(); person.SetNigel();
+            var personJson = JsonWriter.ToJson(
+                person,
                 OutputModes.Custom,
                 (value, type, description) => $"{value}{" \\\\ ".IfBothNotEmpty(description.IfBothNotEmpty(". ") + "The field is of type ".IfBothNotEmpty(type))}\n"
            );
-            Console.WriteLine($"** Serialized object with custom serializer\n\n{janJson}\n\n");
+            Console.WriteLine($"** Serialized object with custom serializer\n\n{personJson}\n\n");
         }
 
 
 
         public void CustomPropertyDisabledSerializer()
         {
-            var Jan       = new Person();
-            Jan.Iq.Visible = false; 
+            var person = new Person(); person.SetNigel();
+            person.Iq.Visible = false; 
 
-            var janJson = JsonWriter.ToJson(
-                Jan,
+            var personJson = JsonWriter.ToJson(
+                person,
                 OutputModes.Custom,
                 (value, type, description) => $"{value}{" \\\\ ".IfBothNotEmpty(description.IfBothNotEmpty(". ") + "The field is of type ".IfBothNotEmpty(type))}\n"
            );
-            Console.WriteLine($"** Serialized object with custom property IQ disabled \n\n{janJson}\n\n");
+            Console.WriteLine($"** Serialized object with custom property IQ disabled \n\n{personJson}\n\n");
         }
 
 

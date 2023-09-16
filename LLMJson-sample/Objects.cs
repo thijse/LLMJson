@@ -21,7 +21,7 @@ namespace LLMJson_sample
         [DescriptionAttribute("A list of character traits, e.g. [\"optimistic\", \"smart\"]")]
         public List<string>            Traits   { get; set; }
 
-        [DescriptionAttribute("A dictionary of character statistics, e.g. {{\"bravery\", 100}, { \"nimbleness\", 100}}")]
+        [DescriptionAttribute("A dictionary of character statistics with a percentage between 0 and 100, e.g. {{\"bravery\", 100}, { \"quick thinking\", 100}}")]
         public Dictionary<string, int> Stats    { get; set; }
 
         public Person()
