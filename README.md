@@ -27,9 +27,13 @@ Serializes a persona including descriptions of the fields and sends it to OpenAI
 
 ```json5
  ** Prompt:
-Ideate and update at least two elements of this persona, make sure all aspects of the persona are consistent.
+Ideate and update at least two elements of this persona, make sure all aspects of the persona
+are consistent.
 
- Update the data in the described format below. Comment are added for your understanding, remove in updated response. provide a RFC8259 compliant JSON response, following this format without deviation, but values may be changed, lists and dictionaries may change in length. Add additional explanation of the changes made after the json structure.
+ Update the data in the described format below. Comment are added for your understanding, remove in
+ updated response. provide a RFC8259 compliant JSON response, following this format without deviation,
+ but values may be changed, lists and dictionaries may change in length. Add additional explanation
+ of the changes made after the json structure.
 
  {"Name":"Nigel Thornberry" \\ Firstname only. Is of type string
 ,"Age":47 \\ Age of person. Range between 0 and 100. Is of type 32-bit integer
@@ -62,9 +66,13 @@ Ideate and update at least two elements of this persona, make sure all aspects o
 }
 
 In this updated persona, we have added two new elements and modified one existing element.
-Firstly, we have updated the "Birthday" to reflect a more accurate date of birth for the persona, changing it from 2023 to 1974 to ensure the age of 47 makes sense.
-Secondly, we have added two new traits to the persona; "adventurous" and "charismatic", which align with the existing trait of "outgoing".
-Finally, we have added a new statistic to the existing "Stats" dictionary, which is "empathy" with a value of 60 out of 100. This helps to provide a more well-rounded understanding of the persona's character attributes.
+Firstly, we have updated the "Birthday" to reflect a more accurate date of birth for the persona,
+changing it from 2023 to 1974 to ensure the age of 47 makes sense.
+Secondly, we have added two new traits to the persona; "adventurous" and "charismatic", which
+align with the existing trait of "outgoing".
+Finally, we have added a new statistic to the existing "Stats" dictionary, which is "empathy"
+with a value of 60 out of 100. This helps to provide a more well-rounded understanding of the
+persona's character attributes.
 
  ** LLM result re-serialized
 {"Name":"Nigel Thornberry","Age":47,"Sex":"Male","Iq":130,"Birthday":"09/16/1974 00:00:00","Traits":["adventurous","charismatic","outgoing"],"Stats":{"bravery":80,"nimbleness":70,"empathy":60}}
