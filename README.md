@@ -1,4 +1,6 @@
-# LLMJson
+![ArduinoLog logo](/Assets/LLM-JSON.png?raw=true )
+LLMJson
+====================
 
 JSON, but for Large Language Model interaction
 
