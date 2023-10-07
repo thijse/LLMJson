@@ -27,18 +27,19 @@ public class TemperatureProp : JsonProp<float>
 {
     public TemperatureProp(float value, bool visible = true, bool immutable = false) :
         base(value, "Temperature in Celcius", visible, immutable,
-            s =>
+            rawValue =>
             {
-                var value = SafeParseUtils.PrepString(s).Trim('C');
+                // Start with normal Parsing. PrepString does some basic cleaning
+                var stringValue = SafeParseUtils.PrepString(rawValue).Trim('C');
                 // First try to directly interpret as number
-                var success = float.TryParse(value, out float floatValue);
-                if (success) return new Tuple<float, bool>(floatValue, true);
-
-                // Not possible? try a Microsoft Recognizer
-                value = SafeParseUtils.RecognizerResultToValue(NumberWithUnitRecognizer.RecognizeTemperature(s, Culture.English))?.Trim('C');
+                var success = float.TryParse(stringValue, out float floatValue);
+                // Return if a success
+                if (success) return new Tuple<float, bool>(floatValue, success);
+                // Not successful? Let's try a Microsoft Recognizer
+                stringValue = SafeParseUtils.RecognizerResultToValue(NumberWithUnitRecognizer.RecognizeTemperature(rawValue, Culture.English));
                 // to do: check for Fahrenheit/ Kelvin, convert to C
-                success = float.TryParse(value, out floatValue);
+                success = float.TryParse(stringValue, out floatValue);
                 return new Tuple<float, bool>(floatValue, success);
             })
-    { }
+    {}
 }

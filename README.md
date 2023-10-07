@@ -72,17 +72,14 @@ Ideate and update at least two elements of this persona, make sure all aspects o
 
  Update the data in the described format below. Comment are added for your understanding, remove in updated response. provide a RFC8259 compliant JSON response, following this format without deviation, but values may be changed, lists and dictionaries may change in length. Add additional explanation of the changes made after the json structure.
 
- {"Name":"Nigel Thornberry" \\ Firstname only. Is of type string
-,"Age":47 \\ Age of person. Range between 0 and 100. Is of type 32-bit integer
-,"Sex":"Male" \\ Is of type enum. Possible values are Male,Female,Other
-,"Iq":130 \\ Intelligence coefficient. Is of type 32-bit integer
-,"Birthday":"09/16/2023 00:00:00" \\ Is of type date and time in format dddd, dd MMMM yyyy HH:mm:ss
-,"Traits":["sneaky"
-,"funny"
-] \\ A list of character traits, e.g. ["optimistic", "smart"]. Is of type List, items are of type string
-,"Stats":{"bravery":80
-,"nimbleness":70
-} \\ A dictionary of character statistics with a percentage between 0 and 100, e.g. {{"bravery", 100}, { "quick thinking", 100}}. Is of type Dictionary . The key is of type string, the value of 32-bit integer
+{
+   "Name"     :"Nigel Thornberry" \\ Firstname only. Is of type string
+  ,"Age"      :47 \\ Age of person. Range between 0 and 100. Is of type 32-bit integer
+  ,"Sex"      :"Male" \\ Is of type enum. Possible values are Male,Female,Other
+  ,"Iq"       :130 \\ Intelligence coefficient. Is of type 32-bit integer
+  ,"Birthday" : "09/16/2023 00:00:00" \\ Is of type date and time in format dddd, dd MMMM yyyy HH:mm:ss
+  ,"Traits"   :["sneaky" ,"funny"] \\ A list of character traits, e.g. ["optimistic", "smart"]. Is of type List, items are of type string
+  ,"Stats"    :{"bravery":80 ,"nimbleness":70} \\ A dictionary of character statistics with a percentage between 0 and 100, e.g. {{"bravery", 100}, { "quick thinking", 100}}. Is of type Dictionary . The key is of type string, the value of 32-bit integer
 }
 ```
 
