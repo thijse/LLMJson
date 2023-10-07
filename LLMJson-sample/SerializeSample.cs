@@ -55,14 +55,15 @@ namespace LLMJson_sample
         public void CustomPropertyDisabledSerializer()
         {
             var person = new Person(); person.SetNigel();
-            person.Iq.Visible = false; 
+            person.Iq   .Visible = false; 
+            person.Stats.Visible = false;
 
             var personJson = JsonWriter.ToJson(
                 person,
                 OutputModes.Custom,
                 (value, type, description) => $"{value}{" \\\\ ".IfBothNotEmpty(description.IfBothNotEmpty(". ") + "The field is of type ".IfBothNotEmpty(type))}\n"
            );
-            Console.WriteLine($"** Serialized object with custom property IQ disabled \n\n{personJson}\n\n");
+            Console.WriteLine($"** Serialized object with custom property IQ & Stats disabled \n\n{personJson}\n\n");
         }
 
 

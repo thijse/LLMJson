@@ -24,7 +24,10 @@ namespace LLMJson
     // - Parsing of abstract classes or interfaces is NOT supported and will throw an exception.
     public static class JsonParser
     {
+
+        public static bool UseRepair     { get; set; } = true;
         public static bool UseRecognizer { get; set; } = true;
+
 
         [ThreadStatic] static Stack<List<string>> splitArrayPool;
         [ThreadStatic] static StringBuilder stringBuilder;
@@ -44,10 +47,8 @@ namespace LLMJson
         {
             _baseObject = baseObject;
             _isbase = true;
-            //if (_baseObject==null) { _baseObject = new T();}
             JsonRepair.Context = JsonRepair.InputType.LLM;
-            try { json = JsonRepair.RepairJson(json); } catch (Exception) { /* cleaning failed */ }
-
+            if (UseRepair) { try { json = JsonRepair.RepairJson(json); } catch (Exception) { /* cleaning failed */ } }
             // Initialize, if needed, the ThreadStatic variables
             if (propertyInfoCache == null) propertyInfoCache = new Dictionary<Type, Dictionary<string, PropertyInfo>>();
             if (fieldInfoCache == null) fieldInfoCache = new Dictionary<Type, Dictionary<string, FieldInfo>>();

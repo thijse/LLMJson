@@ -26,6 +26,7 @@ namespace LLMJson_sample
             // Use Nigel persona as filling
             var personNigel     = new Person(); personNigel.SetNigel();
             // Serialize to JSON
+            
             var personNigelJson = personNigel.ToJson(OutputModes.Value);
             Console.WriteLine($"** Serialized object with values\n\n{personNigelJson}\n\n");
 
@@ -68,6 +69,7 @@ namespace LLMJson_sample
 
                 // Parse Json returned by LLM 
                 var personUpdate = llmResult.FromJson<Person>(new Person());
+
 
                 // Show again as Json to compare
                 var personJson = personUpdate.ToJson(OutputModes.Value);
