@@ -9,14 +9,14 @@ LLMJson - JSON, but for Large Language Model interaction
 LLMS such as OpenAI GPT are  notoriously bad in consistently generating well-formed datastructures, even as simple as JSON. LLMJson aims to make your life a lot easier
 
 ### What LLMJson cannot do:
-This library is based on the TinyJson library, and while great, it comes with the same shortcomings and adds a few:
+This library is based on the TinyJson library. While it is great, it comes with the same shortcomings and LLM-JSON and adds a it's own:
 
 - Limited to parsing <2GB JSON files add most
 - It will not parse abstract classes or interfaces 
 - It's slow: it might very well be the *slowest JSON library in the world*.
 
 ### What LLMJson can do:
-However, all that is less relevant for the intended use of this library, namely sharing data structures with an LLM in an understandable manner. And interpreting data structures returned by the LLM.
+However, all that is less relevant for the intended use of this library, namely sharing data structures with an LLM in an understandable manner and interpreting data structures returned by the LLM.
 - LLMJson can serialize its values, but it can also generate descriptions in a way that LLMs understand how to fill in the fields
 - It is robust against leading and trailing text, markup errors, comments and  missing or superfluous fields
 - It is very good at interpreting field values that are non standard.
@@ -50,7 +50,7 @@ In our program we have a class that defines the statem that is being updated in 
     }
 }
 ```
-We will see that `Description` attributes will add comments to json that we generate. `JsonProp<int>` is a special kind of property especially useful for dynamic JsonModel, we will get back to that object later.
+We will see that `Description` attributes will add comments to json that we generate. `JsonProp<...>` is a special kind of property especially useful for dynamic usage, we will get back to that object later.
 
 Next, we  create a prompt for the LLM, requesting it to update the model, adding the model with descriptions
 
