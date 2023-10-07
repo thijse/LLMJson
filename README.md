@@ -229,7 +229,7 @@ You can turn this feature off by `JsonParser.UseRepair = false` but there does n
 Another source of mistakes is that fields are filled with incompatible values. For example
 ```json5
 {
-	"BoolField"  : "true", // true should not be between quotes
+    "BoolField"  : "true", // true should not be between quotes
     "IntField"   : 455.7,   // Int value should not have digits
     "stringField : 10    // string field should not be between quotes
 }
