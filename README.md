@@ -1,6 +1,6 @@
 ![ArduinoLog logo](/Assets/LLM-JSON.png?raw=true )
-[![License](https://img.shields.io/badge/license-MIT%20License-blue.svg)](http://doge.mit-license.org)
 
+[![License](https://img.shields.io/badge/license-MIT%20License-blue.svg)](http://doge.mit-license.org)
 LLMJson
 ====================
 
