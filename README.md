@@ -1,4 +1,5 @@
 ![ArduinoLog logo](/Assets/LLM-JSON.png?raw=true )
+[![License](https://img.shields.io/badge/license-MIT%20License-blue.svg)](http://doge.mit-license.org)
 LLMJson
 ====================
 
@@ -18,8 +19,9 @@ However, all that is less relevant for the intended use of this library, namely 
 - LLMJson can serialize its values, but it can also serialize field descriptions in a way that LLMs understand
 - It is robust against leading and trailing text, as LLMs tend to add introductions and explanations
 - It is robust against missing fields and additional fields and comments
-- It is (often) robust against errors such as missing quotes,   missing escape characters,  missing commas and  missing closing brackets and more
-- It is very good at interpreting values that are technically incorrect @examples
+- It is quite robust against many markup errors
+- It is very good at interpreting field values that are technically incorrect.
+
 
 And even if a field cannot be parsed, the parser will ignore it and continue!
 
@@ -196,6 +198,35 @@ Note that based on the different formats, `JsonWriter.GetPrompt()` returns diffe
 
 ## Deserializing JSON
 
+Serialization can be done either through```JsonParser.FromJson<Person>(PersonJson,basePerson)``` or ```PersonJson.FromJson<Person>(basePerson)```, where the object `basePerson` is the object that will be updated with the values from JSON. This can be `new Person()` if want just the values from JSON.
+
+### Robust field parsing
+
+LLMJSON  uses [JSONRepairSharp](https://github.com/thijse/JsonRepairSharp) to pre-parse the JSON Response coming from the LLM to remove multiple types of mistakes:
+- It is robust against leading and trailing text, as LLMs tend to add introductions and explanations
+- It is robust against missing fields and additional fields and comments
+- It is (often) robust against errors such as missing quotes, missing escape characters,  missing commas,  missing closing brackets and more
+
+You can turn this feature off by `JsonParser.UseRepair = false` but there does not seem to be any reason to do so.
+
+Another source of mistakes is that fields are filled with incompatible values. For example
+```json5{
+	"BoolField"  : "true", // true should not be between quotes
+    "IntField"   : 455.7,   // Int value should not have digits
+    "stringField : 10    // string field should not be between quotes
+}```
+
+and so on. The LLMJSON parser is able to resolve these and other malformatted fields. Sometimes LLMs may give values back in even more non-standard responses
+```json5{
+	"OrdinalField" : "eleventh",
+	"FloatField"   : "eight point six",
+	"DateTimeField": "8:00pm 5 jan 2021"
+}```
+
+Using the Microsoft Recognizer library, these values can still be parsed, when the normal parser fails. Be aware that this can be very, very slow. So, if speed is more important than robustness, turn off the recognizers using `JsonParser.UseRecognizer = false`
+
+
+
 ### JsonProp
 
-### Extensive field parsing
+
