@@ -1,10 +1,10 @@
 ![ArduinoLog logo](/Assets/LLM-JSON.png?raw=true )
 
 [![License](https://img.shields.io/badge/license-MIT%20License-blue.svg)](http://doge.mit-license.org)
-LLMJson
+LLMJson - JSON, but for Large Language Model interaction
 ====================
 
-JSON, but for Large Language Model interaction
+
 
 LLMS such as OpenAI GPT are  notoriously bad in consistently generating well-formed datastructures, even as simple as JSON. LLMJson aims to make your life a lot easier
 
