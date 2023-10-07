@@ -92,13 +92,13 @@ sent to an LLM, it will an answer similar to the following
 Here is the updated persona
 
 {
-	"Name": "Nigel Thornberry",
-	"Age": "fourty seven",
-	"Sex": "Male",
-	"Iq": "130",
-	"Birthday": "09/16/1974 00:00:00",
-	"Traits": ["adventurous", "charismatic", "outgoing"],
-	"Stats": {
+	"Name"     : "Nigel Thornberry",
+	"Age"      : "fourty seven",
+	"Sex"      : "Male",
+	"Iq"       : "130",
+	"Birthday" : "09/16/1974 00:00:00",
+	"Traits"   : ["adventurous", "charismatic", "outgoing"],
+	"Stats"    : {
 		"bravery": 80,
 		"nimbleness": 70,
 		"empathy": 60
