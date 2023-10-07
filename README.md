@@ -145,7 +145,7 @@ where outputMode has 3 distinct modes:
 	"Iq"       : 130,
 	"Birthday" : "09/16/2023 00:00:00",
 	"Traits"   : ["sneaky", "funny"],
-	"Stats"    : {	"bravery": 80,	"nimbleness": 70 }
+	"Stats"    : { "bravery": 80, "nimbleness": 70 }
 }
 ```
 
@@ -162,7 +162,7 @@ When outputted as descriptions it will give back the following
 	"Iq"       : "Intelligence coefficient. Is of type 32-bit integer",
 	"Birthday" : "date and time in format dddd, dd MMMM yyyy HH:mm:ss",
 	"Traits"   : [] \\ A list of character traits, e.g.["optimistic", "smart"].Is of type List, items are of type string,
-	"Stats"    : {}  \\	A dictionary of character statistics with a percentage between 0 and 100, e.g. {{"bravery",100}, {"quick thinking",100}}.Is of type Dictionary. The key is of type string, the value of is type string
+	"Stats"    : {} \\ A dictionary of character statistics with a percentage between 0 and 100, e.g. {{"bravery",100}, {"quick thinking",100}}.Is of type Dictionary. The key is of type string, the value of is type string
 }
 ```
 Note that this is not a JSON schema nor valid JSON, but a pseudo-JSON that LLMs understand typically very well. Types are automatically extracted from the class definition, and comments are added through attributes.
@@ -174,8 +174,8 @@ Now, if you want to share with an LLM both values and descriptions, you will get
 
 ```json5
 {
-	"Name": "Nigel Thornberry      "  \\ Firstname only.Is of type string,
-	"Age": 47                         \\ Age of person.Range between 0 and 100. Is of type 32 - bit integer,
+	"Name": "Nigel Thornberry"  \\ Firstname only.Is of type string,
+	"Age": 47                   \\ Age of person.Range between 0 and 100. Is of type 32 - bit integer,
 	...
 }
 ```
@@ -230,8 +230,8 @@ Another source of mistakes is that fields are filled with incompatible values. F
 ```json5
 {
     "BoolField"  : "true", // true should not be between quotes
-    "IntField"   : 455.7,   // Int value should not have digits
-    "stringField : 10    // string field should not be between quotes
+    "IntField"   : 455.7,  // Int value should not have digits
+    "stringField : 10      // string field should not be between quotes
 }
 ```
 
