@@ -227,7 +227,8 @@ LLMJSON  uses [JSONRepairSharp](https://github.com/thijse/JsonRepairSharp) to pr
 You can turn this feature off by `JsonParser.UseRepair = false` but there does not seem to be any reason to do so.
 
 Another source of mistakes is that fields are filled with incompatible values. For example
-```json5{
+```json5
+{
 	"BoolField"  : "true", // true should not be between quotes
     "IntField"   : 455.7,   // Int value should not have digits
     "stringField : 10    // string field should not be between quotes
@@ -235,7 +236,8 @@ Another source of mistakes is that fields are filled with incompatible values. F
 ```
 
 and so on. The LLMJSON parser is able to resolve these and other malformatted fields. Sometimes LLMs may give values back in even more non-standard responses
-```json5{
+```json5
+{
 	"OrdinalField" : "eleventh",
 	"FloatField"   : "eight point six",
 	"DateTimeField": "8:00pm 5 jan 2021"
