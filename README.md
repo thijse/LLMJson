@@ -1,5 +1,6 @@
 [![License](https://img.shields.io/badge/license-MIT%20License-blue.svg)](http://doge.mit-license.org)
-![ArduinoLog logo](/Assets/LLM-JSON.png?raw=true )
+
+![LLM_JSON logo](/Assets/LLM-JSON.png?raw=true )
 
 LLMJson - JSON, but for Large Language Model interaction
 ====================
