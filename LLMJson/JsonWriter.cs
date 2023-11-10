@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
@@ -188,16 +189,17 @@ public static class JsonWriter
         }
         else if (item is IList)
         {
+            Type valueType = type.GetGenericArguments()[0];
             // ** type is list
             stringBuilder.Append('[');
-            object? typeValue = null; // value created to be used for type
+            //object? typeValue = null; // value created to be used for type
             if (_outputMode != OutputModes.Description)
             {
                 bool isFirst = true;
                 IList? list = item as IList;
                 for (int i = 0; i < list?.Count; i++)
                 {
-                    typeValue = list[i];
+                   // typeValue = list[i];
                     if (isFirst)
                         isFirst = false;
                     else
@@ -205,12 +207,20 @@ public static class JsonWriter
                     AppendValue(stringBuilder, list[i],"",false);
                 }
             }
-            CreateEndList(stringBuilder, GetValueTypeString(typeValue),description);
+            //else
+            //{
+            //    if (item is IList list && list.Count > 0) typeValue = list[0];
+            //}
+
+            //Type typeValue = ((item as IList)!).GetType().GetGenericArguments().Single();
+
+            CreateEndList(stringBuilder, GetTypeString(valueType),description);
         }
         else if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>))
         {
             // ** Type is dictionary
-            Type keyType = type.GetGenericArguments()[0];
+            Type keyType   = type.GetGenericArguments()[0];
+            Type valueType = type.GetGenericArguments()[1];
 
             //Refuse to output dictionary keys that aren't of type string
             if (keyType != typeof(string))
@@ -223,11 +233,10 @@ public static class JsonWriter
             object? typeValue = null; // value created to be used for type
             if (_outputMode != OutputModes.Description)
             {
-                IDictionary? dict = item as IDictionary;
                 bool isFirst = true;
-                foreach (object key in dict.Keys)
+                if (item is IDictionary dict) foreach (object key in dict.Keys)
                 {
-                    typeValue = dict[key];
+                    //typeValue = dict[key];
                     if (isFirst)
                         isFirst = false;
                     else
@@ -238,8 +247,18 @@ public static class JsonWriter
                     AppendValue(stringBuilder, dict[key],"", false);
                 }
             }
+            //else
+            //{
+            //    if (item is IDictionary dict) foreach (object key in dict.Keys)
+            //    {
+            //        typeValue = dict[key];
+            //        break;
+            //    }
+            //}
 
-            CreateEndDictionary(stringBuilder, GetValueTypeString(typeValue), description);
+            //typeValue = ((item as IDictionary)!).GetType().GetGenericArguments()[1];
+
+            CreateEndDictionary(stringBuilder, GetTypeString(valueType), description);
             //stringBuilder.Append('}');
         }
         else
@@ -315,6 +334,29 @@ public static class JsonWriter
         return true;
     }
 
+    static string GetTypeString(Type type)
+    {
+        if (type == typeof(string)
+         || type == typeof(char    )) return "string";
+        if (type == typeof(byte    )) return "8-bit unsigned integer";
+        if (type == typeof(sbyte   )) return "8-bit integer";
+        if (type == typeof(short   )) return "16-bit integer";
+        if (type == typeof(ushort  )) return "16-bit unsigned integer";
+        if (type == typeof(int     )) return "32-bit integer";
+        if (type == typeof(uint    )) return "32-bit unsigned integer";
+        if (type == typeof(long    )) return "64-bit integer";
+        if (type == typeof(ulong   )) return "64-bit unsigned integer";
+        if (type == typeof(float)
+         || type == typeof(double)
+         || type == typeof(decimal )) return "floating point";
+        if (type == typeof(bool    )) return "bool";
+        if (type == typeof(DateTime)) return $"date and time in format {System.Globalization.CultureInfo.InvariantCulture.DateTimeFormat.FullDateTimePattern}";
+        if (type.IsEnum) return $"enum. Possible values are {String.Join(",", Enum.GetNames(type))}";
+
+        return "";
+    }
+
+
     static string GetValueTypeString(object? item)
     {
         if (item == null           ) return "is non-existent. Ignore";
@@ -351,7 +393,7 @@ public static class JsonWriter
             case OutputModes.Custom:
             case OutputModes.Description:
             case OutputModes.ValueAndDescription:
-                stringBuilder.Append($"}}{" \\\\ ".IfBothNotEmpty(description.IfBothNotEmpty(". ") + $"Is of type Dictionary . The key is of type string, the value of {valueTypeString}\n")}");
+                stringBuilder.Append($"}}{" \\\\ ".IfBothNotEmpty(description.IfBothNotEmpty(". ") + $"Is of type Dictionary. The key is of type string, the value of {valueTypeString}.")}\n");
                 break;
         }
     }
@@ -367,8 +409,7 @@ public static class JsonWriter
             case OutputModes.Custom:
             case OutputModes.Description:
             case OutputModes.ValueAndDescription:
-                //stringBuilder.Append($"}}{" \\\\ ".IfBothNotEmpty(description.IfBothNotEmpty(". ") + $"Is of type List, items are of type {valueTypeString}")}\n");
-                stringBuilder.Append($"]{" \\\\ ".IfBothNotEmpty(description.IfBothNotEmpty(". ") + $"Is of type List, items are of type {valueTypeString}")}\n");
+                stringBuilder.Append($"]{" \\\\ ".IfBothNotEmpty(description.IfBothNotEmpty(". ") + $"Is of type List, items are of type {valueTypeString}")}.\n");
                 break;
         }
     }
@@ -396,13 +437,13 @@ public static class JsonWriter
         {
             default:
             case OutputModes.Value:
-                stringBuilder.Append($"{valueString}");
+                stringBuilder.Append($"{valueString}\n");
                 break;
             case OutputModes.Description:
-                stringBuilder.Append($"\"{description.IfBothNotEmpty(". ")}{valueTypeString}\"");
+                stringBuilder.Append($"\"{description.IfBothNotEmpty(". ")}{valueTypeString}\"\n");
                 break;
             case OutputModes.ValueAndDescription:
-                stringBuilder.Append($"{valueString}{" \\\\ ".IfBothNotEmpty(description.IfBothNotEmpty(". ")+"Is of type ".IfBothNotEmpty(valueTypeString))}\n");
+                stringBuilder.Append($"{valueString}{" \\\\ ".IfBothNotEmpty(description.IfBothNotEmpty(". ")+"Is of type ".IfBothNotEmpty(valueTypeString))}.\n");
                 break;
             case OutputModes.Custom:
                 if (_createField!=null) stringBuilder.Append(_createField(valueString,valueTypeString,description));
