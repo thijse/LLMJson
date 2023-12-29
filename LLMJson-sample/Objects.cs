@@ -20,9 +20,8 @@ namespace LLMJson_sample
 
         [DescriptionAttribute("A list of character traits, e.g. [\"optimistic\", \"smart\"]")]
         public List<string>            Traits   { get; set; }
-
-        [DescriptionAttribute("A dictionary of character statistics with a percentage between 0 and 100, e.g. {{\"bravery\", 100}, { \"quick thinking\", 100}}")]
-        public Dictionary<string, int> Stats    { get; set; }
+        
+        public JsonProp<Dictionary<string, int>> Stats { get; set; }
 
         public Person()
         {
@@ -32,7 +31,7 @@ namespace LLMJson_sample
             Iq       = new JsonProp<int>(0, "");
             Birthday = DateTime.MinValue;
             Traits   = new List<string>() { };
-            Stats    = new Dictionary<string, int> { };
+            Stats    = new(new Dictionary<string, int>(), "A dictionary of character statistics with a percentage between 0 and 100, e.g. {{\"bravery\", 100}, { \"quick thinking\", 100}}");
         }
 
         public void SetNigel()
@@ -43,7 +42,7 @@ namespace LLMJson_sample
             Iq       = new JsonProp<int>(130, "Intelligence coefficient");
             Birthday = DateTime.Today;
             Traits   = new List<string>() { "sneaky", "funny" };
-            Stats    = new Dictionary<string, int> { { "bravery", 80 }, { "nimbleness", 70 } };
+            Stats    = new(new Dictionary<string, int>() { { "bravery", 80 }, { "nimbleness", 70 } }, "A dictionary of character statistics with a percentage between 0 and 100, e.g. {{\"bravery\", 100}, { \"quick thinking\", 100}}") ;
         }
     }
 

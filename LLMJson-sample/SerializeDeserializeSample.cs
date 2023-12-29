@@ -13,19 +13,20 @@ namespace LLMJson_sample
         public SerializeDeserializeSample()
         {
             // Add your OpenAI key to a file called apikey.txt in the same folder as this project, and set the build action to "Copy if newer"
-            string openAIkey = File.Exists("apikey.txt") ? File.ReadAllText("apikey.txt") : ""; // OpenAI key
+            string openAIkey = File.Exists("apikey.txt") ? File.ReadAllText("apikey.txtapikey.txt") : ""; // OpenAI key
             _openAiService   = new OpenAIService(new OpenAiOptions() { ApiKey = openAIkey });
         }
 
         public void SerializeAndDeserialize()
         {
             Console.WriteLine($"\n\n** Serializes a persona to JSON:");
-            Console.WriteLine($"   next it desialized the JSON back into an object");
+            Console.WriteLine($"   next it serializes the JSON back into an object");
             Console.WriteLine($"   finally the received object is shown as JSON to confirm its correctness. \n\n");
 
             // Use Nigel persona as filling
             var personNigel     = new Person(); personNigel.SetNigel();
             // Serialize to JSON
+            
             var personNigelJson = personNigel.ToJson(OutputModes.Value);
             Console.WriteLine($"** Serialized object with values\n\n{personNigelJson}\n\n");
 
@@ -68,6 +69,7 @@ namespace LLMJson_sample
 
                 // Parse Json returned by LLM 
                 var personUpdate = llmResult.FromJson<Person>(new Person());
+
 
                 // Show again as Json to compare
                 var personJson = personUpdate.ToJson(OutputModes.Value);
