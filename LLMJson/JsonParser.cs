@@ -3,6 +3,8 @@ using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
 
+#pragma warning disable CS8600, CS8601, CS8602, CS8603, CS8604, CS8618
+
 namespace LLMJson
 {
     // Really simple JSON parser in ~300 lines
@@ -409,7 +411,11 @@ namespace LLMJson
             }
             else
             {
+#if NET5_0_OR_GREATER
+                instance = System.Runtime.CompilerServices.RuntimeHelpers.GetUninitializedObject(type);
+#else
                 instance = FormatterServices.GetUninitializedObject(type);
+#endif
             }
 
             //The list is split into key/value pairs only, this means the split must be divisible by 2 to be valid JSON

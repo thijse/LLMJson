@@ -2,7 +2,8 @@
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
-//using static LLMJson.JsonProp<T>;
+
+#pragma warning disable CS8602
 
 namespace LLMJson;
 
